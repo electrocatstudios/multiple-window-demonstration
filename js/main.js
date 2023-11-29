@@ -6,8 +6,9 @@ let character = null;
 
 let state = null;
 
-let pointing_at = { left: null, right: null, cooldown: 0 };
+let pointing_at = { left: null, right: null, cooldown: 0, cur_rot: 0, desired_rot: 0 };
 
+const ROTATION_SPEED = 0.15;
 const POINT_COOLDOWN_MIN = 20;
 const POINT_COOLDOWN_MAX = 50;
 
@@ -146,7 +147,8 @@ function update() {
         pointing_at.cooldown = POINT_COOLDOWN_MIN + (Math.random() * (POINT_COOLDOWN_MAX-POINT_COOLDOWN_MIN));
         pointing_at.left = get_random_char(other_char_pos);
         pointing_at.right = get_random_char(other_char_pos);
-        console.log("Setting  new pointing at", JSON.stringify(pointing_at));
+        pointing_at.cur_rot = pointing_at.desired_rot;
+        // console.log("Setting  new pointing at", JSON.stringify(pointing_at));
     } else {
         pointing_at.cooldown -= 1;
     }
@@ -158,17 +160,35 @@ function update() {
     let angle_left = get_angle_to_point(position, point_left);
     let angle_right = get_angle_to_point(position, point_right);
 
-    let rotation = (angle_left + angle_right) /2 ;
+    // Get most appropriate average of the two points to 
+    pointing_at.desired_rot = get_best_avg(angle_left, angle_right);
+    
+    // $('#debug').html("left: " + angle_left + ", right: " + angle_right + ", body: " + pointing_at.desired_rot);
+
+    // Rotate towards desired state
+    if(pointing_at.desired_rot > pointing_at.cur_rot) {
+        if(pointing_at.desired_rot - pointing_at.cur_rot < ROTATION_SPEED){
+            pointing_at.cur_rot = pointing_at.desired_rot;
+        } else {
+            pointing_at.cur_rot += ROTATION_SPEED;
+        }
+    } else if (pointing_at.desired_rot < pointing_at.cur_rot) {
+        if(pointing_at.cur_rot - pointing_at.desired_rot < ROTATION_SPEED){
+            pointing_at.cur_rot = pointing_at.desired_rot;
+        } else {
+            pointing_at.cur_rot -= ROTATION_SPEED;
+        }
+    }
 
     // Feet first, just in the middle
-    drawImage(ctx, feet, canvas.width/2, canvas.height/2, rotation);
+    drawImage(ctx, feet, canvas.width/2, canvas.height/2,  pointing_at.cur_rot);
 
     // Arms - TODO: Calculate each arm rotation
-    drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(rotation-0.5)), canvas.height/2 - (35*Math.sin(rotation-0.5)), angle_right);
-    drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(rotation+0.5)), canvas.height/2 + (35*Math.sin(rotation+0.5)), angle_left);
+    drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(pointing_at.cur_rot-0.5)), canvas.height/2 - (35*Math.sin(pointing_at.cur_rot-0.5)), angle_right);
+    drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(pointing_at.cur_rot+0.5)), canvas.height/2 + (35*Math.sin(pointing_at.cur_rot+0.5)), angle_left);
     
     // Finally body - same as feet
-    drawImage(ctx, body, canvas.width/2, canvas.height/2, rotation);
+    drawImage(ctx, body, canvas.width/2, canvas.height/2,  pointing_at.cur_rot);
     
 }
 
@@ -176,7 +196,14 @@ function get_angle_to_point(pt1, pt2) {
     if(pt1 == undefined || pt2 == undefined) {
         return 0;
     }
-    return Math.atan2(pt1.x - pt2.x, pt2.y-pt1.y);
+    let ret = Math.atan2(pt1.x - pt2.x, pt2.y-pt1.y);
+    if(ret < 0) {
+        return ret + (Math.PI * 2);
+    } else if (ret > Math.PI * 2) {
+        return ret - (Math.PI * 2);
+    } else {
+        return ret;
+    }
 }
 
 function drawImage(context, img, x, y, rot) {
@@ -218,4 +245,17 @@ function get_point_for_char(pts, name) {
         }
     }
     return {x:0,y:0};
+}
+
+
+function get_best_avg(point_left, point_right) {
+    if(point_left == point_right) {
+        return point_left;
+    }
+
+    if(Math.abs(point_left-point_right) < Math.abs( (point_left+(Math.PI*2.0))-point_right)) {
+        return (point_left+point_right) /2;
+    } else {
+        return ((point_left + (Math.PI*2.0)) - point_right) / 2;
+    }
 }

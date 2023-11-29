@@ -18,10 +18,18 @@
                 left: 10px;
                 top: 10px;
             }
+            #debug {
+                position:absolute;
+                z-index: 20;
+                top: 50px;
+                left: 10px;
+                color: white;
+            }
         </style>
     </head>
     <body onload="init()">
         <button onclick="reset_state()" id="reset_button">Reset</button>
         <canvas id="canvas"></canvas>
+        <div id="debug"></div>
     </body>
 </html>
