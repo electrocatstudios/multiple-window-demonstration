@@ -6,6 +6,11 @@ let character = null;
 
 let state = null;
 
+let pointing_at = { left: null, right: null, cooldown: 0 };
+
+const POINT_COOLDOWN_MIN = 20;
+const POINT_COOLDOWN_MAX = 50;
+
 const LS_KEY_NAME = "cs_positions";
 const CHAR_LIST = ["andy", "michael", "dwight", "pam"];
 
@@ -83,12 +88,21 @@ function update() {
         reset_state();
         return;
     }
+
+    // Get character positions that are not us
+    let other_char_pos = [];
+
     // Update the state stored for our character
     for(var i=0;i<state.chars.length;i++){
         if(state.chars[i].id == ident){
             state.chars[i].position.x = position.x;
             state.chars[i].position.y = position.y;
-            break;
+        } else {
+            other_char_pos.push({
+                name: state.chars[i].name,
+                x: state.chars[i].position.x,
+                y: state.chars[i].position.y,
+            });
         }
     }
     set_state(state);
@@ -117,6 +131,7 @@ function update() {
     if(character == null){
         return;
     }
+
     let body = IMAGE_LOADER.get_image("assets/images/" + character + "/body.png");
     let left = IMAGE_LOADER.get_image("assets/images/" + character + "/left_arm.png");
     let right = IMAGE_LOADER.get_image("assets/images/" + character + "/right_arm.png");
@@ -127,23 +142,30 @@ function update() {
         return;
     }
     
-    // Calculate rotation
-    let pos = {x:0, y:0};
-    for(var i=0;i<state.chars.length;i++){
-        if(state.chars[i].id != ident) {
-            pos.x = state.chars[i].position.x;
-            pos.y = state.chars[i].position.y;
-        }
+    if(pointing_at.cooldown <= 0){
+        pointing_at.cooldown = POINT_COOLDOWN_MIN + (Math.random() * (POINT_COOLDOWN_MAX-POINT_COOLDOWN_MIN));
+        pointing_at.left = get_random_char(other_char_pos);
+        pointing_at.right = get_random_char(other_char_pos);
+        console.log("Setting  new pointing at", JSON.stringify(pointing_at));
+    } else {
+        pointing_at.cooldown -= 1;
     }
 
-    let rotation = get_angle_to_point(position, pos);
+    let point_left = get_point_for_char(other_char_pos, pointing_at.left);
+    let point_right = get_point_for_char(other_char_pos, pointing_at.right);
+
+    // Calculate body rotation
+    let angle_left = get_angle_to_point(position, point_left);
+    let angle_right = get_angle_to_point(position, point_right);
+
+    let rotation = (angle_left + angle_right) /2 ;
 
     // Feet first, just in the middle
     drawImage(ctx, feet, canvas.width/2, canvas.height/2, rotation);
 
     // Arms - TODO: Calculate each arm rotation
-    drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(rotation-0.5)), canvas.height/2 - (35*Math.sin(rotation-0.5)), rotation);
-    drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(rotation+0.5)), canvas.height/2 + (35*Math.sin(rotation+0.5)), rotation);
+    drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(rotation-0.5)), canvas.height/2 - (35*Math.sin(rotation-0.5)), angle_right);
+    drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(rotation+0.5)), canvas.height/2 + (35*Math.sin(rotation+0.5)), angle_left);
     
     // Finally body - same as feet
     drawImage(ctx, body, canvas.width/2, canvas.height/2, rotation);
@@ -151,6 +173,9 @@ function update() {
 }
 
 function get_angle_to_point(pt1, pt2) {
+    if(pt1 == undefined || pt2 == undefined) {
+        return 0;
+    }
     return Math.atan2(pt1.x - pt2.x, pt2.y-pt1.y);
 }
 
@@ -171,4 +196,26 @@ function drawImage(context, img, x, y, rot) {
     context.drawImage(img, 0, 0, img.width, img.height, -img.width/2, -img.height/2, img.width, img.height);
     
     context.restore();
+}
+
+function get_random_char(pts) {
+    console.log(pts);
+    if(pts.length < 1) {
+        return {x: 0, y: 0};
+    }
+    let idx = Math.floor(Math.random() * pts.length);
+    console.log(idx, pts[idx]);
+    return pts[idx].name;
+}
+
+function get_point_for_char(pts, name) {
+    for(var i=0;i<pts.length;i++){
+        if(pts[i].name == name){
+            return {
+                x: pts[i].x,
+                y: pts[i].y
+            };
+        }
+    }
+    return {x:0,y:0};
 }
