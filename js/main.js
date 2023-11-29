@@ -138,19 +138,37 @@ function update() {
 
     let rotation = get_angle_to_point(position, pos);
 
-    // Apply translation and rotation
-    ctx.translate((canvas.width/2) + 50, (canvas.height/2) + 25);
-    ctx.rotate(rotation);
-    ctx.translate((-canvas.width/2) - 50, (-canvas.height/2) - 25 );
-    
-    // Draw the assets
-    ctx.drawImage(feet, canvas.width/2, canvas.height/2);
-    ctx.drawImage(right, (canvas.width/2) + 10, canvas.height/2 + 10 );
-    ctx.drawImage(left, (canvas.width/2) + 70, canvas.height/2 + 10 );
-    ctx.drawImage(body, canvas.width/2, canvas.height/2);
+    // Feet first, just in the middle
+    drawImage(ctx, feet, canvas.width/2, canvas.height/2, rotation);
 
+    // Arms - TODO: Calculate each arm rotation
+    drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(rotation-0.5)), canvas.height/2 - (35*Math.sin(rotation-0.5)), rotation);
+    drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(rotation+0.5)), canvas.height/2 + (35*Math.sin(rotation+0.5)), rotation);
+    
+    // Finally body - same as feet
+    drawImage(ctx, body, canvas.width/2, canvas.height/2, rotation);
+    
 }
 
 function get_angle_to_point(pt1, pt2) {
     return Math.atan2(pt1.x - pt2.x, pt2.y-pt1.y);
+}
+
+function drawImage(context, img, x, y, rot) {
+    context.save();
+    
+    // Center the image
+    x -= img.width/2;
+    y -= img.height/2;
+    
+    // Set the origin to the center of the image
+    context.translate(x + img.width/2, y + img.height/2);
+    
+    // Rotate the canvas around the origin
+    context.rotate(rot);
+
+    // Draw the image   
+    context.drawImage(img, 0, 0, img.width, img.height, -img.width/2, -img.height/2, img.width, img.height);
+    
+    context.restore();
 }
