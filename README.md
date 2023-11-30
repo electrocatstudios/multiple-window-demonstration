@@ -33,6 +33,9 @@ python3 -m http.server
 Note: Requires Python to be installed, if using Windows, should already be installed on other 
 operating systems.
 
+### Hosted version
+You can open multiple windows to [https://electrocatstudios.com/conference-room-standoff](https://electrocatstudios.com/conference-room-standoff) to see the output.
+
 ---
 
 ## FAQ & Troubleshooting
