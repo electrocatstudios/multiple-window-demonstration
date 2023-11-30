@@ -37,7 +37,13 @@ operating systems.
 
 ## FAQ & Troubleshooting
 
-### I'm getting a black background and not the office image
+### I'm getting a black background and not the office image?
 The application assumes that you are only using one monitor (just to reduce complexity) and 
 so the background image will only scale to the primary screen. The application will work on 
 a second monitor but you'll just see a void and not the carpet texture.
+
+### Why are the graphics so low quality?
+I am not an artist (a quick flick through my other repos will prove this to be true!). If
+you fancy helping out with the graphics then please feel free to fork the repo, update 
+the GIMP projects and send a PR. Or if you'd like to use a different package then simply
+replace the images in the `assets` folder.
