@@ -148,7 +148,6 @@ function update() {
         pointing_at.left = get_random_char(other_char_pos);
         pointing_at.right = get_random_char(other_char_pos);
         pointing_at.cur_rot = pointing_at.desired_rot;
-        // console.log("Setting  new pointing at", JSON.stringify(pointing_at));
     } else {
         pointing_at.cooldown -= 1;
     }
@@ -163,8 +162,6 @@ function update() {
     // Get most appropriate average of the two points to 
     pointing_at.desired_rot = get_best_avg(angle_left, angle_right);
     
-    // $('#debug').html("left: " + angle_left + ", right: " + angle_right + ", body: " + pointing_at.desired_rot);
-
     // Rotate towards desired state
     if(pointing_at.desired_rot > pointing_at.cur_rot) {
         if(pointing_at.desired_rot - pointing_at.cur_rot < ROTATION_SPEED){
@@ -180,14 +177,14 @@ function update() {
         }
     }
 
-    // Feet first, just in the middle
+    // Feet first
     drawImage(ctx, feet, canvas.width/2, canvas.height/2,  pointing_at.cur_rot);
 
-    // Arms - TODO: Calculate each arm rotation
+    // Arms
     drawImage(ctx, right, (canvas.width/2) - (35*Math.cos(pointing_at.cur_rot-0.5)), canvas.height/2 - (35*Math.sin(pointing_at.cur_rot-0.5)), angle_right);
     drawImage(ctx, left, (canvas.width/2) + (35*Math.cos(pointing_at.cur_rot+0.5)), canvas.height/2 + (35*Math.sin(pointing_at.cur_rot+0.5)), angle_left);
     
-    // Finally body - same as feet
+    // Finally body
     drawImage(ctx, body, canvas.width/2, canvas.height/2,  pointing_at.cur_rot);
     
 }
@@ -226,12 +223,10 @@ function drawImage(context, img, x, y, rot) {
 }
 
 function get_random_char(pts) {
-    console.log(pts);
     if(pts.length < 1) {
         return {x: 0, y: 0};
     }
     let idx = Math.floor(Math.random() * pts.length);
-    console.log(idx, pts[idx]);
     return pts[idx].name;
 }
 

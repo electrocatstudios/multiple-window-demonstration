@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/image_loader.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
         <title>Conference Room Standoff</title>
@@ -18,18 +17,10 @@
                 left: 10px;
                 top: 10px;
             }
-            #debug {
-                position:absolute;
-                z-index: 20;
-                top: 50px;
-                left: 10px;
-                color: white;
-            }
         </style>
     </head>
     <body onload="init()">
         <button onclick="reset_state()" id="reset_button">Reset</button>
         <canvas id="canvas"></canvas>
-        <div id="debug"></div>
     </body>
 </html>
