@@ -63,7 +63,8 @@ function init() {
             state.chars.push({
                 "id": ident,
                 "name": character,
-                "position": {"x": 0, "y": 0}
+                "position": {"x": 0, "y": 0},
+                "rot": 0
             });
             quit = true;
         }
@@ -133,6 +134,41 @@ function update() {
         return;
     }
 
+    // Draw other characters
+    for(var i=0;i<state.chars.length;i++){
+        if(state.chars[i].id != ident) {
+            let feet = IMAGE_LOADER.get_image("assets/images/" + state.chars[i].name + "/feet.png");
+            let left = IMAGE_LOADER.get_image("assets/images/" + state.chars[i].name + "/left_arm.png");
+            let right = IMAGE_LOADER.get_image("assets/images/" + state.chars[i].name + "/right_arm.png");
+            let body = IMAGE_LOADER.get_image("assets/images/" + state.chars[i].name + "/body.png"); 
+            if(feet!==null){
+                drawImage(ctx, feet, state.chars[i].position.x + offsetX, state.chars[i].position.y + offsetY,  state.chars[i].rot);
+            }
+            if(left !== null && right !== null){
+                // Arms
+                drawImage(
+                    ctx, 
+                    right, 
+                    state.chars[i].position.x + offsetX - (35*Math.cos(state.chars[i].rot-0.5)), 
+                    state.chars[i].position.y + offsetY - (35*Math.sin(state.chars[i].rot-0.5)), 
+                    state.chars[i].rot
+                );
+                drawImage(
+                    ctx, 
+                    left, 
+                    state.chars[i].position.x + offsetX + (35*Math.cos(state.chars[i].rot+0.5)), 
+                    state.chars[i].position.y + offsetY + (35*Math.sin(state.chars[i].rot+0.5)), 
+                    state.chars[i].rot
+                );
+            }
+            
+            // Finally body
+            if(body !== null) {
+                drawImage(ctx, body, state.chars[i].position.x + offsetX, state.chars[i].position.y + offsetY,  state.chars[i].rot);
+            }
+        }
+    }
+
     let body = IMAGE_LOADER.get_image("assets/images/" + character + "/body.png");
     let left = IMAGE_LOADER.get_image("assets/images/" + character + "/left_arm.png");
     let right = IMAGE_LOADER.get_image("assets/images/" + character + "/right_arm.png");
@@ -175,6 +211,18 @@ function update() {
         } else {
             pointing_at.cur_rot -= ROTATION_SPEED;
         }
+    }
+
+    {
+        // Save the rotation for the character in case of overlap
+        let tmp_state = get_state();
+        for(var i=0;tmp_state!==undefined && tmp_state!=null && i<tmp_state.chars.length;i++){
+            if(tmp_state.chars[i].id == ident){
+                tmp_state.chars[i].rot = pointing_at.cur_rot;
+                break;
+            }
+        }
+        set_state(tmp_state);
     }
 
     // Feet first
